@@ -17,7 +17,11 @@ class ExpressionTestHarness : AbstractFunctionFactory(null) {
     }
 
     companion object {
-        suspend fun withFunction(name: String, function: Function, test: suspend ExpressionTestHarness.() -> Unit) {
+        suspend fun withFunction(
+            name: String,
+            function: Function,
+            test: suspend ExpressionTestHarness.() -> Unit,
+        ) {
             ExpressionTestHarness().apply {
                 addFunction(name, "", function)
                 test()

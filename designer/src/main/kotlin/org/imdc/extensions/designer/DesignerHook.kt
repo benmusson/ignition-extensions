@@ -39,7 +39,11 @@ class DesignerHook : AbstractDesignerModuleHook() {
         manager.apply {
             addScriptModule("system.dataset", DatasetExtensions, ExtensionDocProvider)
             addScriptModule("system.util", UtilitiesExtensions(context), ExtensionDocProvider)
-            addScriptModule("system.project", DesignerProjectExtensions(context), ExtensionDocProvider)
+            addScriptModule(
+                "system.project",
+                DesignerProjectExtensions(context),
+                ExtensionDocProvider,
+            )
         }
     }
 
@@ -51,11 +55,7 @@ class DesignerHook : AbstractDesignerModuleHook() {
                 IsAvailableFunction(),
             )
             registerLogicFunctions()
-            addFunction(
-                UUID4Function.NAME,
-                UUID4Function.CATEGORY,
-                UUID4Function(),
-            )
+            addFunction(UUID4Function.NAME, UUID4Function.CATEGORY, UUID4Function())
         }
     }
 }

@@ -7,11 +7,13 @@ import org.imdc.extensions.common.TagExtensions
 import org.python.core.Py
 
 class GatewayTagExtensions(private val context: GatewayContext) : TagExtensions() {
-    override fun getConfigurationImpl(basePath: TagPath, recursive: Boolean): List<TagConfigurationModel> {
-        val provider = (
-            context.tagManager.getTagProvider(basePath.source)
-                ?: throw Py.ValueError("No such tag provider ${basePath.source}")
-            )
+    override fun getConfigurationImpl(
+        basePath: TagPath,
+        recursive: Boolean,
+    ): List<TagConfigurationModel> {
+        val provider =
+            (context.tagManager.getTagProvider(basePath.source)
+                ?: throw Py.ValueError("No such tag provider ${basePath.source}"))
 
         return provider.getTagConfigsAsync(listOf(basePath), recursive, true).get()
     }

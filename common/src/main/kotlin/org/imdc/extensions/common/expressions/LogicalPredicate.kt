@@ -15,7 +15,9 @@ sealed class LogicalPredicate(val name: String) : AbstractFunction() {
     abstract fun Array<out Expression>.apply(): Boolean
 
     override fun getArgDocString(): String = "values..."
+
     override fun getFunctionDisplayName(): String = name
+
     override fun getType(): Class<*> = Boolean::class.java
 
     object AllOfFunction : LogicalPredicate("allOf") {

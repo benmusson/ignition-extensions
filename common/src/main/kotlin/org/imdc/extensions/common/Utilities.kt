@@ -2,9 +2,9 @@ package org.imdc.extensions.common
 
 import com.inductiveautomation.ignition.common.BundleUtil
 import com.inductiveautomation.ignition.common.Dataset
+import java.lang.reflect.Method
 import org.python.core.Py
 import org.python.core.PyObject
-import java.lang.reflect.Method
 
 class PyObjectAppendable(target: PyObject) : Appendable {
     private val writeMethod = target.__getattr__("write")
@@ -17,9 +17,7 @@ class PyObjectAppendable(target: PyObject) : Appendable {
         append(csq.toString().subSequence(start, end))
     }
 
-    override fun append(c: Char): Appendable = apply {
-        append(c.toString())
-    }
+    override fun append(c: Char): Appendable = apply { append(c.toString()) }
 }
 
 val Dataset.rowIndices: IntRange
@@ -35,7 +33,8 @@ operator fun Dataset.get(row: Int, col: Int): Any? {
 inline fun <reified T> PyObject.toJava(): T {
     try {
         val cast =
-            this.__tojava__(T::class.java) ?: throw Py.TypeError("Expected ${T::class.java.simpleName}, got None")
+            this.__tojava__(T::class.java)
+                ?: throw Py.TypeError("Expected ${T::class.java.simpleName}, got None")
         return cast as T
     } catch (e: ClassCastException) {
         throw Py.TypeError("Expected ${T::class.java.simpleName}")

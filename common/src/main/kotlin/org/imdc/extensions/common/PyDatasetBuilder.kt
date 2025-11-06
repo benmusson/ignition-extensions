@@ -13,13 +13,9 @@ import org.python.core.adapter.PyObjectAdapter
 class PyDatasetBuilder(private val builder: DatasetBuilder) : PyObject() {
     private val resolver = ClassNameResolver.createBasic()
 
-    fun colNames(vararg names: String) = apply {
-        builder.colNames(names.toList())
-    }
+    fun colNames(vararg names: String) = apply { builder.colNames(names.toList()) }
 
-    fun colNames(names: List<String>) = apply {
-        builder.colNames(names)
-    }
+    fun colNames(names: List<String>) = apply { builder.colNames(names) }
 
     fun colTypes(vararg types: PyObject) = apply {
         if (types.singleOrNull()?.isSequenceType == true) {
@@ -29,13 +25,9 @@ class PyDatasetBuilder(private val builder: DatasetBuilder) : PyObject() {
         }
     }
 
-    fun colTypes(types: List<Class<*>>) = apply {
-        builder.colTypes(types)
-    }
+    fun colTypes(types: List<Class<*>>) = apply { builder.colTypes(types) }
 
-    fun addRow(vararg values: Any?) = apply {
-        builder.addRow(*values)
-    }
+    fun addRow(vararg values: Any?) = apply { builder.addRow(*values) }
 
     fun build(): Dataset = builder.build()
 
@@ -54,5 +46,6 @@ class PyDatasetBuilder(private val builder: DatasetBuilder) : PyObject() {
 
 class DatasetBuilderAdapter : PyObjectAdapter {
     override fun adapt(o: Any?): PyObject = PyDatasetBuilder(o as DatasetBuilder)
+
     override fun canAdapt(o: Any?): Boolean = o is DatasetBuilder
 }

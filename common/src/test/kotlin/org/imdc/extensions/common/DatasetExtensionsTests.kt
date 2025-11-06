@@ -6,44 +6,43 @@ import com.inductiveautomation.ignition.common.util.DatasetBuilder
 import io.kotest.assertions.withClue
 import io.kotest.engine.spec.tempfile
 import io.kotest.matchers.shouldBe
-import org.imdc.extensions.common.DatasetExtensions.printDataset
-import org.python.core.Py
 import java.awt.Color
 import java.util.Date
+import org.imdc.extensions.common.DatasetExtensions.printDataset
+import org.python.core.Py
 
 @Suppress("PyUnresolvedReferences", "PyInterpreter")
-class DatasetExtensionsTests : JythonTest(
-    { globals ->
+class DatasetExtensionsTests :
+    JythonTest({ globals ->
         globals["utils"] = DatasetExtensions
         globals["builder"] = DatasetBuilder.newBuilder()
-        globals["dataset"] = DatasetBuilder.newBuilder()
-            .colNames("a", "b", "c")
-            .colTypes(Int::class.javaObjectType, Double::class.javaObjectType, String::class.java)
-            .addRow(1, 3.14, "pi")
-            .addRow(2, 6.28, "tau")
-            .build()
+        globals["dataset"] =
+            DatasetBuilder.newBuilder()
+                .colNames("a", "b", "c")
+                .colTypes(
+                    Int::class.javaObjectType,
+                    Double::class.javaObjectType,
+                    String::class.java,
+                )
+                .addRow(1, 3.14, "pi")
+                .addRow(2, 6.28, "tau")
+                .build()
 
         val excelSample =
             DatasetExtensionsTests::class.java.getResourceAsStream("sample.xlsx")!!.readAllBytes()
-        val tempXlsx = tempfile(suffix = "xlsx").also {
-            it.writeBytes(excelSample)
-        }
+        val tempXlsx = tempfile(suffix = "xlsx").also { it.writeBytes(excelSample) }
         globals["xlsxBytes"] = excelSample
         globals["xlsxFile"] = tempXlsx.toString()
 
         val excelSample2 =
             DatasetExtensionsTests::class.java.getResourceAsStream("sample2.xlsx")!!.readAllBytes()
-        val tempXlsx2 = tempfile(suffix = "xlsx").also {
-            it.writeBytes(excelSample2)
-        }
+        val tempXlsx2 = tempfile(suffix = "xlsx").also { it.writeBytes(excelSample2) }
         globals["xlsxFile2"] = tempXlsx2.toString()
         globals["xlsxBytes2"] = excelSample2
 
         val xlsSample =
             DatasetExtensionsTests::class.java.getResourceAsStream("sample.xls")!!.readAllBytes()
-        val tempXls = tempfile(suffix = "xls").also {
-            it.writeBytes(xlsSample)
-        }
+        val tempXls = tempfile(suffix = "xls").also { it.writeBytes(xlsSample) }
         globals["xlsBytes"] = xlsSample
         globals["xlsFile"] = tempXls.toString()
 
@@ -52,18 +51,9 @@ class DatasetExtensionsTests : JythonTest(
         globals["javaInt"] = Int::class.java
         globals["javaString"] = String::class.java
         globals["javaBool"] = Boolean::class.java
-    },
-) {
+    }) {
     private fun Dataset.asClue(assertions: (Dataset) -> Unit) {
-        withClue(
-            {
-                buildString {
-                    printDataset(this, this@asClue, true)
-                }
-            },
-        ) {
-            assertions(this)
-        }
+        withClue({ buildString { printDataset(this, this@asClue, true) } }) { assertions(this) }
     }
 
     init {
@@ -71,35 +61,37 @@ class DatasetExtensionsTests : JythonTest(
 
         context("Map tests") {
             test("Null dataset") {
-                shouldThrowPyException(Py.TypeError) {
-                    eval<Dataset>("utils.map(None, None)")
-                }
+                shouldThrowPyException(Py.TypeError) { eval<Dataset>("utils.map(None, None)") }
             }
 
             test("Simple mapper, preserving types") {
-                eval<Dataset>("utils.map(dataset, lambda a, b, c: (a * 2, b * 2, c * 2), True)").asClue {
-                    it.columnNames shouldBe listOf("a", "b", "c")
-                    it.columnTypes shouldBe listOf(
-                        Int::class.javaObjectType,
-                        Double::class.javaObjectType,
-                        String::class.java,
-                    )
-                    it.rowCount shouldBe 2
-                    it.getColumnAsList(0) shouldBe listOf(2, 4)
-                    it.getColumnAsList(1) shouldBe listOf(6.28, 12.56)
-                    it.getColumnAsList(2) shouldBe listOf("pipi", "tautau")
-                }
+                eval<Dataset>("utils.map(dataset, lambda a, b, c: (a * 2, b * 2, c * 2), True)")
+                    .asClue {
+                        it.columnNames shouldBe listOf("a", "b", "c")
+                        it.columnTypes shouldBe
+                            listOf(
+                                Int::class.javaObjectType,
+                                Double::class.javaObjectType,
+                                String::class.java,
+                            )
+                        it.rowCount shouldBe 2
+                        it.getColumnAsList(0) shouldBe listOf(2, 4)
+                        it.getColumnAsList(1) shouldBe listOf(6.28, 12.56)
+                        it.getColumnAsList(2) shouldBe listOf("pipi", "tautau")
+                    }
             }
 
             test("Simple mapper, discarding types") {
-                eval<Dataset>("utils.map(dataset, lambda a, b, c: (a * 2, b * 2, c * 2), False)").asClue {
-                    it.columnNames shouldBe listOf("a", "b", "c")
-                    it.columnTypes shouldBe listOf(Any::class.java, Any::class.java, Any::class.java)
-                    it.rowCount shouldBe 2
-                    it.getColumnAsList(0) shouldBe listOf(2, 4)
-                    it.getColumnAsList(1) shouldBe listOf(6.28, 12.56)
-                    it.getColumnAsList(2) shouldBe listOf("pipi", "tautau")
-                }
+                eval<Dataset>("utils.map(dataset, lambda a, b, c: (a * 2, b * 2, c * 2), False)")
+                    .asClue {
+                        it.columnNames shouldBe listOf("a", "b", "c")
+                        it.columnTypes shouldBe
+                            listOf(Any::class.java, Any::class.java, Any::class.java)
+                        it.rowCount shouldBe 2
+                        it.getColumnAsList(0) shouldBe listOf(2, 4)
+                        it.getColumnAsList(1) shouldBe listOf(6.28, 12.56)
+                        it.getColumnAsList(2) shouldBe listOf("pipi", "tautau")
+                    }
             }
         }
 
@@ -107,11 +99,12 @@ class DatasetExtensionsTests : JythonTest(
             test("Constant filter") {
                 eval<Dataset>("utils.filter(dataset, lambda **kwargs: False)").asClue {
                     it.columnNames shouldBe listOf("a", "b", "c")
-                    it.columnTypes shouldBe listOf(
-                        Int::class.javaObjectType,
-                        Double::class.javaObjectType,
-                        String::class.java,
-                    )
+                    it.columnTypes shouldBe
+                        listOf(
+                            Int::class.javaObjectType,
+                            Double::class.javaObjectType,
+                            String::class.java,
+                        )
                     it.rowCount shouldBe 0
                 }
             }
@@ -119,11 +112,12 @@ class DatasetExtensionsTests : JythonTest(
             test("Conditional filter all kwargs") {
                 eval<Dataset>("utils.filter(dataset, lambda **kwargs: kwargs['row'] >= 1)").asClue {
                     it.columnNames shouldBe listOf("a", "b", "c")
-                    it.columnTypes shouldBe listOf(
-                        Int::class.javaObjectType,
-                        Double::class.javaObjectType,
-                        String::class.java,
-                    )
+                    it.columnTypes shouldBe
+                        listOf(
+                            Int::class.javaObjectType,
+                            Double::class.javaObjectType,
+                            String::class.java,
+                        )
                     it.rowCount shouldBe 1
                 }
             }
@@ -131,11 +125,12 @@ class DatasetExtensionsTests : JythonTest(
             test("Conditional filter unpacking row") {
                 eval<Dataset>("utils.filter(dataset, lambda row, **kwargs: row >= 1)").asClue {
                     it.columnNames shouldBe listOf("a", "b", "c")
-                    it.columnTypes shouldBe listOf(
-                        Int::class.javaObjectType,
-                        Double::class.javaObjectType,
-                        String::class.java,
-                    )
+                    it.columnTypes shouldBe
+                        listOf(
+                            Int::class.javaObjectType,
+                            Double::class.javaObjectType,
+                            String::class.java,
+                        )
                     it.rowCount shouldBe 1
                 }
             }
@@ -144,53 +139,56 @@ class DatasetExtensionsTests : JythonTest(
         context("Print tests") {
             context("Basic dataset") {
                 test("Without types") {
-                    buildString {
-                        printDataset(this, globals["dataset"])
-                    } shouldBe """
-                        | Row |   a |    b |   c |
-                        | --- | --- | ---- | --- |
-                        |   0 |   1 | 3.14 |  pi |
-                        |   1 |   2 | 6.28 | tau |
+                    buildString { printDataset(this, globals["dataset"]) } shouldBe
+                        """
+                            | Row |   a |    b |   c |
+                            | --- | --- | ---- | --- |
+                            |   0 |   1 | 3.14 |  pi |
+                            |   1 |   2 | 6.28 | tau |
 
-                    """.trimIndent()
+                        """
+                            .trimIndent()
                 }
 
                 test("With types") {
                     buildString {
                         printDataset(this, globals["dataset"], includeTypes = true)
-                    } shouldBe """
-                        | Row | a (Integer) | b (Double) | c (String) |
-                        | --- | ----------- | ---------- | ---------- |
-                        |   0 |           1 |       3.14 |         pi |
-                        |   1 |           2 |       6.28 |        tau |
+                    } shouldBe
+                        """
+                            | Row | a (Integer) | b (Double) | c (String) |
+                            | --- | ----------- | ---------- | ---------- |
+                            |   0 |           1 |       3.14 |         pi |
+                            |   1 |           2 |       6.28 |        tau |
 
-                    """.trimIndent()
+                        """
+                            .trimIndent()
                 }
             }
 
-            val emptyDataset = BasicDataset(
-                listOf("a", "b", "c"),
-                listOf(String::class.java, Int::class.java, Boolean::class.java),
-            )
+            val emptyDataset =
+                BasicDataset(
+                    listOf("a", "b", "c"),
+                    listOf(String::class.java, Int::class.java, Boolean::class.java),
+                )
             context("Empty dataset") {
                 test("Without types") {
-                    buildString {
-                        printDataset(this, emptyDataset)
-                    } shouldBe """
-                        | Row |   a |   b |   c |
-                        | --- | --- | --- | --- |
+                    buildString { printDataset(this, emptyDataset) } shouldBe
+                        """
+                            | Row |   a |   b |   c |
+                            | --- | --- | --- | --- |
 
-                    """.trimIndent()
+                        """
+                            .trimIndent()
                 }
 
                 test("With types") {
-                    buildString {
-                        printDataset(this, emptyDataset, includeTypes = true)
-                    } shouldBe """
-                        | Row | a (String) | b (int) | c (boolean) |
-                        | --- | ---------- | ------- | ----------- |
+                    buildString { printDataset(this, emptyDataset, includeTypes = true) } shouldBe
+                        """
+                            | Row | a (String) | b (int) | c (boolean) |
+                            | --- | ---------- | ------- | ----------- |
 
-                    """.trimIndent()
+                        """
+                            .trimIndent()
                 }
             }
         }
@@ -224,67 +222,73 @@ class DatasetExtensionsTests : JythonTest(
                 eval<Dataset>("utils.fromExcel(xlsxBytes, headerRow=0)").asClue {
                     it.rowCount shouldBe 99
                     it.columnCount shouldBe 16
-                    it.columnNames shouldBe listOf(
-                        "Segment",
-                        "Country",
-                        "Product",
-                        "Discount Band",
-                        "Units Sold",
-                        "Manufacturing Price",
-                        "Sale Price",
-                        "Gross Sales",
-                        "Discounts",
-                        "Sales",
-                        "COGS",
-                        "Profit",
-                        "Date",
-                        "Month Number",
-                        "Month Name",
-                        "Year",
-                    )
+                    it.columnNames shouldBe
+                        listOf(
+                            "Segment",
+                            "Country",
+                            "Product",
+                            "Discount Band",
+                            "Units Sold",
+                            "Manufacturing Price",
+                            "Sale Price",
+                            "Gross Sales",
+                            "Discounts",
+                            "Sales",
+                            "COGS",
+                            "Profit",
+                            "Date",
+                            "Month Number",
+                            "Month Name",
+                            "Year",
+                        )
                 }
             }
             test("With String Override") {
-                eval<Dataset>("utils.fromExcel(xlsxBytes2, headerRow=0, typeOverrides={2: 'str', 4: 'str'})").asClue {
-                    it.rowCount shouldBe 99
-                    it.columnCount shouldBe 16
-                    it.columnNames shouldBe listOf(
-                        "Segment",
-                        "Country",
-                        "Product",
-                        "Discount Band",
-                        "Units Sold",
-                        "Manufacturing Price",
-                        "Sale Price",
-                        "Gross Sales",
-                        "Discounts",
-                        "Sales",
-                        "COGS",
-                        "Profit",
-                        "Date",
-                        "Month Number",
-                        "Month Name",
-                        "Year",
+                eval<Dataset>(
+                        "utils.fromExcel(xlsxBytes2, headerRow=0, typeOverrides={2: 'str', 4: 'str'})"
                     )
-                    it.columnTypes shouldBe listOf(
-                        String::class.java,
-                        Any::class.java,
-                        String::class.java,
-                        String::class.java,
-                        String::class.java,
-                        Int::class.javaObjectType,
-                        Int::class.javaObjectType,
-                        Int::class.javaObjectType,
-                        Int::class.javaObjectType,
-                        Int::class.javaObjectType,
-                        Int::class.javaObjectType,
-                        Int::class.javaObjectType,
-                        Date::class.java,
-                        Int::class.javaObjectType,
-                        String::class.java,
-                        String::class.java,
-                    )
-                }
+                    .asClue {
+                        it.rowCount shouldBe 99
+                        it.columnCount shouldBe 16
+                        it.columnNames shouldBe
+                            listOf(
+                                "Segment",
+                                "Country",
+                                "Product",
+                                "Discount Band",
+                                "Units Sold",
+                                "Manufacturing Price",
+                                "Sale Price",
+                                "Gross Sales",
+                                "Discounts",
+                                "Sales",
+                                "COGS",
+                                "Profit",
+                                "Date",
+                                "Month Number",
+                                "Month Name",
+                                "Year",
+                            )
+                        it.columnTypes shouldBe
+                            listOf(
+                                String::class.java,
+                                Any::class.java,
+                                String::class.java,
+                                String::class.java,
+                                String::class.java,
+                                Int::class.javaObjectType,
+                                Int::class.javaObjectType,
+                                Int::class.javaObjectType,
+                                Int::class.javaObjectType,
+                                Int::class.javaObjectType,
+                                Int::class.javaObjectType,
+                                Int::class.javaObjectType,
+                                Date::class.java,
+                                Int::class.javaObjectType,
+                                String::class.java,
+                                String::class.java,
+                            )
+                    }
             }
             test("First row") {
                 eval<Dataset>("utils.fromExcel(xlsxBytes, headerRow=0, firstRow=50)").asClue {
@@ -299,210 +303,173 @@ class DatasetExtensionsTests : JythonTest(
                 }
             }
             test("First & last row") {
-                eval<Dataset>("utils.fromExcel(xlsxBytes, headerRow=0, firstRow=5, lastRow=10)").asClue {
-                    it.rowCount shouldBe 6
-                    it.columnCount shouldBe 16
-                }
+                eval<Dataset>("utils.fromExcel(xlsxBytes, headerRow=0, firstRow=5, lastRow=10)")
+                    .asClue {
+                        it.rowCount shouldBe 6
+                        it.columnCount shouldBe 16
+                    }
             }
             test("First column") {
                 eval<Dataset>("utils.fromExcel(xlsxBytes, headerRow=0, firstColumn=10)").asClue {
                     it.rowCount shouldBe 99
                     it.columnCount shouldBe 6
-                    it.columnNames shouldBe listOf(
-                        "COGS",
-                        "Profit",
-                        "Date",
-                        "Month Number",
-                        "Month Name",
-                        "Year",
-                    )
+                    it.columnNames shouldBe
+                        listOf("COGS", "Profit", "Date", "Month Number", "Month Name", "Year")
                 }
             }
             test("Last column") {
                 eval<Dataset>("utils.fromExcel(xlsxBytes, headerRow=0, lastColumn=5)").asClue {
                     it.rowCount shouldBe 99
                     it.columnCount shouldBe 6
-                    it.columnNames shouldBe listOf(
-                        "Segment",
-                        "Country",
-                        "Product",
-                        "Discount Band",
-                        "Units Sold",
-                        "Manufacturing Price",
-                    )
+                    it.columnNames shouldBe
+                        listOf(
+                            "Segment",
+                            "Country",
+                            "Product",
+                            "Discount Band",
+                            "Units Sold",
+                            "Manufacturing Price",
+                        )
                 }
             }
             test("First & last column") {
-                eval<Dataset>("utils.fromExcel(xlsxBytes, headerRow=0, firstColumn=5, lastColumn=10)").asClue {
-                    it.rowCount shouldBe 99
-                    it.columnCount shouldBe 6
-                    it.columnNames shouldBe listOf(
-                        "Manufacturing Price",
-                        "Sale Price",
-                        "Gross Sales",
-                        "Discounts",
-                        "Sales",
-                        "COGS",
+                eval<Dataset>(
+                        "utils.fromExcel(xlsxBytes, headerRow=0, firstColumn=5, lastColumn=10)"
                     )
-                }
+                    .asClue {
+                        it.rowCount shouldBe 99
+                        it.columnCount shouldBe 6
+                        it.columnNames shouldBe
+                            listOf(
+                                "Manufacturing Price",
+                                "Sale Price",
+                                "Gross Sales",
+                                "Discounts",
+                                "Sales",
+                                "COGS",
+                            )
+                    }
             }
         }
 
         context("Builder") {
             test("Basic usage") {
-                eval<Dataset>("utils.builder(a=int, b=str, c=bool).addRow(1, '2', False).build()").asClue {
-                    it.rowCount shouldBe 1
-                    it.columnCount shouldBe 3
-                    it.columnNames shouldBe listOf(
-                        "a",
-                        "b",
-                        "c",
-                    )
-                    it.columnTypes shouldBe listOf(
-                        Int::class.java,
-                        String::class.java,
-                        Boolean::class.java,
-                    )
-                }
+                eval<Dataset>("utils.builder(a=int, b=str, c=bool).addRow(1, '2', False).build()")
+                    .asClue {
+                        it.rowCount shouldBe 1
+                        it.columnCount shouldBe 3
+                        it.columnNames shouldBe listOf("a", "b", "c")
+                        it.columnTypes shouldBe
+                            listOf(Int::class.java, String::class.java, Boolean::class.java)
+                    }
             }
 
             test("String type codes in builder call") {
-                eval<Dataset>("utils.builder(a='i', b='str', c='b').addRow(1, '2', False).build()").asClue {
-                    it.rowCount shouldBe 1
-                    it.columnCount shouldBe 3
-                    it.columnNames shouldBe listOf(
-                        "a",
-                        "b",
-                        "c",
-                    )
-                    it.columnTypes shouldBe listOf(
-                        Int::class.java,
-                        String::class.java,
-                        Boolean::class.java,
-                    )
-                }
+                eval<Dataset>("utils.builder(a='i', b='str', c='b').addRow(1, '2', False).build()")
+                    .asClue {
+                        it.rowCount shouldBe 1
+                        it.columnCount shouldBe 3
+                        it.columnNames shouldBe listOf("a", "b", "c")
+                        it.columnTypes shouldBe
+                            listOf(Int::class.java, String::class.java, Boolean::class.java)
+                    }
             }
 
             test("Separate colTypes as java types") {
                 eval<Dataset>(
-                    """
-                    utils.builder() \
-                        .colNames('a', 'b', 'c') \
-                        .colTypes(javaInt, javaString, javaBool) \
-                        .addRow(1, '2', False) \
-                        .build()
-                    """.trimIndent(),
-                ).asClue {
-                    it.rowCount shouldBe 1
-                    it.columnCount shouldBe 3
-                    it.columnNames shouldBe listOf(
-                        "a",
-                        "b",
-                        "c",
+                        """
+                        utils.builder() \
+                            .colNames('a', 'b', 'c') \
+                            .colTypes(javaInt, javaString, javaBool) \
+                            .addRow(1, '2', False) \
+                            .build()
+                        """
+                            .trimIndent()
                     )
-                    it.columnTypes shouldBe listOf(
-                        Int::class.java,
-                        String::class.java,
-                        Boolean::class.java,
-                    )
-                }
+                    .asClue {
+                        it.rowCount shouldBe 1
+                        it.columnCount shouldBe 3
+                        it.columnNames shouldBe listOf("a", "b", "c")
+                        it.columnTypes shouldBe
+                            listOf(Int::class.java, String::class.java, Boolean::class.java)
+                    }
             }
 
             test("Separate colTypes as Python types") {
                 eval<Dataset>(
-                    """
-                    utils.builder() \
-                        .colNames('a', 'b', 'c') \
-                        .colTypes(int, str, bool) \
-                        .addRow(1, '2', False) \
-                        .build()
-                    """.trimIndent(),
-                ).asClue {
-                    it.rowCount shouldBe 1
-                    it.columnCount shouldBe 3
-                    it.columnNames shouldBe listOf(
-                        "a",
-                        "b",
-                        "c",
+                        """
+                        utils.builder() \
+                            .colNames('a', 'b', 'c') \
+                            .colTypes(int, str, bool) \
+                            .addRow(1, '2', False) \
+                            .build()
+                        """
+                            .trimIndent()
                     )
-                    it.columnTypes shouldBe listOf(
-                        Int::class.java,
-                        String::class.java,
-                        Boolean::class.java,
-                    )
-                }
+                    .asClue {
+                        it.rowCount shouldBe 1
+                        it.columnCount shouldBe 3
+                        it.columnNames shouldBe listOf("a", "b", "c")
+                        it.columnTypes shouldBe
+                            listOf(Int::class.java, String::class.java, Boolean::class.java)
+                    }
             }
 
             test("Separate colTypes as string shortcodes") {
                 eval<Dataset>(
-                    """
-                    utils.builder() \
-                        .colNames('a', 'b', 'c') \
-                        .colTypes('i', 'str', 'b') \
-                        .addRow(1, '2', False) \
-                        .build()
-                    """.trimIndent(),
-                ).asClue {
-                    it.rowCount shouldBe 1
-                    it.columnCount shouldBe 3
-                    it.columnNames shouldBe listOf(
-                        "a",
-                        "b",
-                        "c",
+                        """
+                        utils.builder() \
+                            .colNames('a', 'b', 'c') \
+                            .colTypes('i', 'str', 'b') \
+                            .addRow(1, '2', False) \
+                            .build()
+                        """
+                            .trimIndent()
                     )
-                    it.columnTypes shouldBe listOf(
-                        Int::class.java,
-                        String::class.java,
-                        Boolean::class.java,
-                    )
-                }
+                    .asClue {
+                        it.rowCount shouldBe 1
+                        it.columnCount shouldBe 3
+                        it.columnNames shouldBe listOf("a", "b", "c")
+                        it.columnTypes shouldBe
+                            listOf(Int::class.java, String::class.java, Boolean::class.java)
+                    }
             }
 
             test("Complex types") {
                 eval<Dataset>(
-                    """
-                    utils.builder(date=date, color=color, unicode=unicode) \
-                        .addRow(date(), color.RED, u'test') \
-                        .build()
-                    """.trimIndent(),
-                ).asClue {
-                    it.rowCount shouldBe 1
-                    it.columnCount shouldBe 3
-                    it.columnNames shouldBe listOf(
-                        "date",
-                        "color",
-                        "unicode",
+                        """
+                        utils.builder(date=date, color=color, unicode=unicode) \
+                            .addRow(date(), color.RED, u'test') \
+                            .build()
+                        """
+                            .trimIndent()
                     )
-                    it.columnTypes shouldBe listOf(
-                        Date::class.java,
-                        Color::class.java,
-                        String::class.java,
-                    )
-                }
+                    .asClue {
+                        it.rowCount shouldBe 1
+                        it.columnCount shouldBe 3
+                        it.columnNames shouldBe listOf("date", "color", "unicode")
+                        it.columnTypes shouldBe
+                            listOf(Date::class.java, Color::class.java, String::class.java)
+                    }
             }
 
             test("Nulls in rows") {
                 eval<Dataset>(
-                    """
-                    utils.builder(a=int, b=str, c=bool) \
-                        .addRow(1, '2', False) \
-                        .addRow(None, None, None) \
-                        .build()
-                    """.trimIndent(),
-                ).asClue {
-                    it.rowCount shouldBe 2
-                    it.columnCount shouldBe 3
-                    it.columnNames shouldBe listOf(
-                        "a",
-                        "b",
-                        "c",
+                        """
+                        utils.builder(a=int, b=str, c=bool) \
+                            .addRow(1, '2', False) \
+                            .addRow(None, None, None) \
+                            .build()
+                        """
+                            .trimIndent()
                     )
-                    it.columnTypes shouldBe listOf(
-                        Int::class.java,
-                        String::class.java,
-                        Boolean::class.java,
-                    )
-                }
+                    .asClue {
+                        it.rowCount shouldBe 2
+                        it.columnCount shouldBe 3
+                        it.columnNames shouldBe listOf("a", "b", "c")
+                        it.columnTypes shouldBe
+                            listOf(Int::class.java, String::class.java, Boolean::class.java)
+                    }
             }
 
             test("Empty dataset") {
@@ -514,52 +481,53 @@ class DatasetExtensionsTests : JythonTest(
 
             test("Add a row as a list") {
                 eval<Dataset>(
-                    """
-                    utils.builder(a=int, b=str, c=bool) \
-                        .addRow([1, '2', False]) \
-                        .build()
-                    """.trimIndent(),
-                ).asClue {
-                    it.rowCount shouldBe 1
-                    it.columnCount shouldBe 3
-                }
+                        """
+                        utils.builder(a=int, b=str, c=bool) \
+                            .addRow([1, '2', False]) \
+                            .build()
+                        """
+                            .trimIndent()
+                    )
+                    .asClue {
+                        it.rowCount shouldBe 1
+                        it.columnCount shouldBe 3
+                    }
             }
 
             test("Add a row as a tuple") {
                 eval<Dataset>(
-                    """
-                    utils.builder(a=int, b=str, c=bool) \
-                        .addRow((1, '2', False)) \
-                        .build()
-                    """.trimIndent(),
-                ).asClue {
-                    it.rowCount shouldBe 1
-                    it.columnCount shouldBe 3
-                }
+                        """
+                        utils.builder(a=int, b=str, c=bool) \
+                            .addRow((1, '2', False)) \
+                            .build()
+                        """
+                            .trimIndent()
+                    )
+                    .asClue {
+                        it.rowCount shouldBe 1
+                        it.columnCount shouldBe 3
+                    }
             }
 
             test("Columns with complex names") {
                 eval<Dataset>(
-                    """
-                    utils.builder(**{'a space': int, u'😍': bool, r',./;\'[]-=<>?:"{}|_+!@#%^&*()`~': str}) \
-                        .addRow((1, '2', False)) \
-                        .build()
-                    """.trimIndent(),
-                ).asClue {
-                    it.rowCount shouldBe 1
-                    it.columnCount shouldBe 3
-                    it.columnNames shouldBe listOf(
-                        "a space",
-                        "\uD83D\uDE0D",
-                        """,./;\'[]-=<>?:"{}|_+!@#%^&*()`~""",
+                        """
+                        utils.builder(**{'a space': int, u'😍': bool, r',./;\'[]-=<>?:"{}|_+!@#%^&*()`~': str}) \
+                            .addRow((1, '2', False)) \
+                            .build()
+                        """
+                            .trimIndent()
                     )
-                }
+                    .asClue {
+                        it.rowCount shouldBe 1
+                        it.columnCount shouldBe 3
+                        it.columnNames shouldBe
+                            listOf("a space", "\uD83D\uDE0D", """,./;\'[]-=<>?:"{}|_+!@#%^&*()`~""")
+                    }
             }
 
             test("Invalid types") {
-                shouldThrowPyException(Py.TypeError) {
-                    eval<Dataset>("utils.builder(a=1).build()")
-                }
+                shouldThrowPyException(Py.TypeError) { eval<Dataset>("utils.builder(a=1).build()") }
                 shouldThrowPyException(Py.TypeError) {
                     eval<Dataset>("utils.builder(a=None).build()")
                 }
@@ -572,7 +540,8 @@ class DatasetExtensionsTests : JythonTest(
                         utils.builder(a=int, b=str, c=bool) \
                             .addRow(1, '2') \
                             .build()
-                        """.trimIndent(),
+                        """
+                            .trimIndent()
                     )
                 }
             }
@@ -584,7 +553,8 @@ class DatasetExtensionsTests : JythonTest(
                         utils.builder(a=int, b=str, c=bool) \
                             .addRow([1, '2']) \
                             .build()
-                        """.trimIndent(),
+                        """
+                            .trimIndent()
                     )
                 }
             }
@@ -595,7 +565,8 @@ class DatasetExtensionsTests : JythonTest(
                         builder.colNames(dataset.columnNames) \
                             .colTypes(dataset.columnTypes) \
                             .build()
-                    """.trimIndent(),
+                    """
+                        .trimIndent()
                 )
             }
         }

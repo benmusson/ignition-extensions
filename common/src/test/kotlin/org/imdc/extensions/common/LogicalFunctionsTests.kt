@@ -11,9 +11,7 @@ class LogicalFunctionsTests : FunSpec() {
     init {
         context("AllOf") {
             withFunction("allOf", AllOfFunction) {
-                test("No arguments") {
-                    evaluate("allOf()") shouldBe true
-                }
+                test("No arguments") { evaluate("allOf()") shouldBe true }
                 test("Simple booleans") {
                     evaluate("allOf(true, true)") shouldBe true
                     evaluate("allOf(true, false)") shouldBe false
@@ -23,9 +21,7 @@ class LogicalFunctionsTests : FunSpec() {
         }
         context("AnyOf") {
             withFunction("anyOf", AnyOfFunction) {
-                test("No arguments") {
-                    evaluate("anyOf()") shouldBe false
-                }
+                test("No arguments") { evaluate("anyOf()") shouldBe false }
                 test("Simple booleans") {
                     evaluate("anyOf(true, true)") shouldBe true
                     evaluate("anyOf(true, false)") shouldBe true
@@ -35,9 +31,7 @@ class LogicalFunctionsTests : FunSpec() {
         }
         context("NoneOf") {
             withFunction("noneOf", NoneOfFunction) {
-                test("No arguments") {
-                    evaluate("noneOf()") shouldBe true
-                }
+                test("No arguments") { evaluate("noneOf()") shouldBe true }
                 test("Simple booleans") {
                     evaluate("noneOf(true, true)") shouldBe false
                     evaluate("noneOf(true, false)") shouldBe false

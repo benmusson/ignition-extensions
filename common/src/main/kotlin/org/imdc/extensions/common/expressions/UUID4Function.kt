@@ -8,12 +8,15 @@ import java.util.UUID
 
 class UUID4Function : AbstractFunction() {
     override fun validateNumArgs(num: Int): Boolean = num == 0
+
     override fun execute(expressions: Array<out Expression>): QualifiedValue {
         return BasicQualifiedValue(UUID.randomUUID())
     }
 
     override fun getArgDocString(): String = ""
+
     override fun getFunctionDisplayName(): String = NAME
+
     override fun getType(): Class<*> = UUID::class.java
 
     companion object {

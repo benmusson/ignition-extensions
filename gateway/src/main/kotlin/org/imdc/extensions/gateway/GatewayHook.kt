@@ -45,7 +45,11 @@ class GatewayHook : AbstractGatewayModuleHook() {
         manager.apply {
             addScriptModule("system.dataset", DatasetExtensions, ExtensionDocProvider)
             addScriptModule("system.util", UtilitiesExtensions(context), ExtensionDocProvider)
-            addScriptModule("system.project", GatewayProjectExtensions(context), ExtensionDocProvider)
+            addScriptModule(
+                "system.project",
+                GatewayProjectExtensions(context),
+                ExtensionDocProvider,
+            )
             addScriptModule("system.tag", GatewayTagExtensions(context), ExtensionDocProvider)
         }
     }
@@ -58,14 +62,11 @@ class GatewayHook : AbstractGatewayModuleHook() {
                 IsAvailableFunction(),
             )
             registerLogicFunctions()
-            addFunction(
-                UUID4Function.NAME,
-                UUID4Function.CATEGORY,
-                UUID4Function(),
-            )
+            addFunction(UUID4Function.NAME, UUID4Function.CATEGORY, UUID4Function())
         }
     }
 
     override fun isFreeModule() = true
+
     override fun isMakerEditionCompatible() = true
 }

@@ -12,13 +12,13 @@ import com.inductiveautomation.ignition.gateway.model.GatewayContext
 import jakarta.servlet.http.HttpServlet
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.apache.http.entity.ContentType
 import java.io.PrintWriter
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Date
+import org.apache.http.entity.ContentType
 
 class HistoryServlet : HttpServlet() {
     private lateinit var context: GatewayContext
@@ -36,11 +36,13 @@ class HistoryServlet : HttpServlet() {
                         req.getParameterValues("path")
                             ?: throw IllegalArgumentException("Must specify at least one path")
                     val startDate =
-                        req.getParameter("startDate")?.toDate() ?: Date.from(Instant.now().minus(8, ChronoUnit.HOURS))
+                        req.getParameter("startDate")?.toDate()
+                            ?: Date.from(Instant.now().minus(8, ChronoUnit.HOURS))
                     val endDate = req.getParameter("endDate")?.toDate() ?: Date()
                     val returnSize = req.getParameter("returnSize")?.toInt() ?: -1
                     val aggregationMode =
-                        req.getParameter("aggregationMode")?.let(AggregationMode::valueOf) ?: AggregationMode.Average
+                        req.getParameter("aggregationMode")?.let(AggregationMode::valueOf)
+                            ?: AggregationMode.Average
                     val aliases = req.getParameter("aliases")?.split(',')
 
                     BasicTagHistoryQueryParams(
@@ -62,9 +64,7 @@ class HistoryServlet : HttpServlet() {
             try {
                 context.tagHistoryManager.queryHistory(
                     historyQuery,
-                    StreamingJsonWriter(
-                        JsonWriter(writer),
-                    ),
+                    StreamingJsonWriter(JsonWriter(writer)),
                 )
             } catch (e: TrialExpiredException) {
                 resp.status = HttpServletResponse.SC_PAYMENT_REQUIRED
@@ -96,34 +96,36 @@ class HistoryServlet : HttpServlet() {
             jsonWriter.beginArray()
         }
 
-        override fun write(data: Array<out Any?>, quality: Array<out QualityCode>): Unit = jsonWriter.run {
-            if (quality.any { it.`is`(QualityCode.Bad_TrialExpired) }) {
-                throw TrialExpiredException()
-            }
+        override fun write(data: Array<out Any?>, quality: Array<out QualityCode>): Unit =
+            jsonWriter.run {
+                if (quality.any { it.`is`(QualityCode.Bad_TrialExpired) }) {
+                    throw TrialExpiredException()
+                }
 
-            writeObject {
-                for (index in data.indices) {
-                    name(names[index])
-                    when (val value = data[index]) {
-                        is Number -> {
-                            when (types[index]) {
-                                Float::class.java, Double::class.java -> value(value.toDouble())
-                                else -> value(value.toLong())
+                writeObject {
+                    for (index in data.indices) {
+                        name(names[index])
+                        when (val value = data[index]) {
+                            is Number -> {
+                                when (types[index]) {
+                                    Float::class.java,
+                                    Double::class.java -> value(value.toDouble())
+                                    else -> value(value.toLong())
+                                }
                             }
+
+                            is Date -> {
+                                value(test.format(value.toInstant()))
+                            }
+
+                            is String -> value(value)
+                            is Boolean -> value(value)
+
+                            null -> nullValue()
                         }
-
-                        is Date -> {
-                            value(test.format(value.toInstant()))
-                        }
-
-                        is String -> value(value)
-                        is Boolean -> value(value)
-
-                        null -> nullValue()
                     }
                 }
             }
-        }
 
         override fun finish() {
             jsonWriter.endArray()
@@ -143,11 +145,12 @@ class HistoryServlet : HttpServlet() {
 
         private val logger = LoggerEx.newBuilder().build(HistoryServlet::class.java)
 
-        private val parsingStrategies = listOf<(String) -> Date>(
-            SimpleDateFormat.getDateTimeInstance()::parse,
-            SimpleDateFormat.getInstance()::parse,
-            { Date(it.toLong()) },
-        )
+        private val parsingStrategies =
+            listOf<(String) -> Date>(
+                SimpleDateFormat.getDateTimeInstance()::parse,
+                SimpleDateFormat.getInstance()::parse,
+                { Date(it.toLong()) },
+            )
 
         private fun String.toDate(): Date? {
             return parsingStrategies.firstNotNullOfOrNull { strategy ->

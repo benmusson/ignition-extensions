@@ -29,7 +29,7 @@ abstract class JythonTest(init: FunSpec.(globals: PyStringMap) -> Unit) : FunSpe
                     globals.clear()
                     init(this@JythonTest, globals)
                 }
-            },
+            }
         )
     }
 

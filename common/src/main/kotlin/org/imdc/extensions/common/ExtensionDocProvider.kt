@@ -7,11 +7,13 @@ import java.lang.reflect.Method
 
 private val propertiesFileDocProvider = PropertiesFileDocProvider()
 
-private val WARNING = """
-    THIS IS AN UNOFFICIAL IGNITION EXTENSION. 
-    IT MAY RELY ON OR EXPOSE UNDOCUMENTED OR DANGEROUS FUNCTIONALITY. 
-    USE AT YOUR OWN RISK.
-""".trimIndent()
+private val WARNING =
+    """
+        THIS IS AN UNOFFICIAL IGNITION EXTENSION. 
+        IT MAY RELY ON OR EXPOSE UNDOCUMENTED OR DANGEROUS FUNCTIONALITY. 
+        USE AT YOUR OWN RISK.
+    """
+        .trimIndent()
 
 object ExtensionDocProvider : ScriptFunctionDocProvider by propertiesFileDocProvider {
     override fun getMethodDescriptor(path: String, method: Method): CompletionDescriptor.Method? {
@@ -20,15 +22,18 @@ object ExtensionDocProvider : ScriptFunctionDocProvider by propertiesFileDocProv
         val unsafeAnnotation = method.getAnnotation<UnsafeExtension>()
 
         return if (unsafeAnnotation != null) {
-            base?.copy(description = buildString {
-                append("<html><b>")
-                append(WARNING)
-                if (unsafeAnnotation.note.isNotEmpty()) {
-                    append("<br>").append(unsafeAnnotation.note)
-                }
-                append("</b><br><br>")
-                append(base.description.orEmpty())
-            })
+            base?.copy(
+                description =
+                    buildString {
+                        append("<html><b>")
+                        append(WARNING)
+                        if (unsafeAnnotation.note.isNotEmpty()) {
+                            append("<br>").append(unsafeAnnotation.note)
+                        }
+                        append("</b><br><br>")
+                        append(base.description.orEmpty())
+                    }
+            )
         } else {
             base
         }
