@@ -1,6 +1,7 @@
 plugins {
     `java-library`
     kotlin("jvm")
+    alias(libs.plugins.spotless)
 }
 
 kotlin {
@@ -11,3 +12,5 @@ dependencies {
     compileOnly(libs.bundles.gateway)
     compileOnly(projects.common)
 }
+
+spotless { kotlin { ktfmt().kotlinlangStyle() } }

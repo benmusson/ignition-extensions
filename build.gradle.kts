@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.kotlin)
     alias(libs.plugins.modl)
+    alias(libs.plugins.spotless)
 }
 
 allprojects {
@@ -47,3 +48,5 @@ ignitionModule {
 tasks.deployModl {
     hostGateway = "http://localhost:18088"
 }
+
+tasks.build { dependsOn(tasks.spotlessCheck) }

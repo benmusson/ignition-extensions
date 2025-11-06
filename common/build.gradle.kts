@@ -1,6 +1,7 @@
 plugins {
     `java-library`
     kotlin("jvm")
+    alias(libs.plugins.spotless)
 }
 
 kotlin {
@@ -20,3 +21,5 @@ tasks {
         jvmArgs = listOf("--add-opens", "java.base/java.io=ALL-UNNAMED")
     }
 }
+
+spotless { kotlin { ktfmt().kotlinlangStyle() } }
